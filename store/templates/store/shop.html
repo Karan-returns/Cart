@@ -1,0 +1,100 @@
+{% extends "store/base.html" %}
+{% load static %}
+
+{% block title %}Shop — Cart Store{% endblock %}
+
+{% block content %}
+<section class="page-header">
+  <div>
+    <h1>Shop</h1>
+    <p class="subtitle">Every {{ discount_every_n }} store-wide orders earns a {{ discount_percent }}% code for the customer who places that order.</p>
+  </div>
+  <div class="customer-badge">
+    <label for="customer-id">Shopping as</label>
+    <input type="text" id="customer-id" placeholder="your-name" autocomplete="off">
+    <div id="customer-stats" class="customer-stats" hidden>
+      <span id="order-count-badge" class="badge badge-success">0 orders</span>
+      <span id="total-spent-badge" class="badge">$0.00 spent</span>
+      <span id="milestone-badge" class="badge badge-muted"></span>
+    </div>
+    <div id="available-codes" class="available-codes" hidden></div>
+  </div>
+</section>
+
+<div class="shop-layout">
+  <section class="panel products-panel">
+    <div class="panel-header">
+      <h2>Products</h2>
+      <button type="button" id="refresh-products" class="btn btn-ghost btn-sm">Refresh</button>
+    </div>
+    <div id="products-grid" class="products-grid">
+      <p class="muted">Loading products…</p>
+    </div>
+  </section>
+
+  <aside class="panel cart-panel">
+    <div class="panel-header">
+      <h2>Your Cart</h2>
+      <span id="cart-count" class="badge">0 items</span>
+    </div>
+    <div id="cart-items" class="cart-items">
+      <p class="muted empty-state">Cart is empty</p>
+    </div>
+    <div class="cart-footer">
+      <div class="cart-total-row">
+        <span>Subtotal</span>
+        <strong id="cart-subtotal">$0.00</strong>
+      </div>
+
+      <label for="discount-code" class="field-label">Discount code</label>
+      <div class="input-row">
+        <input type="text" id="discount-code" placeholder="SAVE-3-ABC123" class="input mono">
+        <button type="button" id="apply-discount-btn" class="btn btn-secondary" disabled>Apply</button>
+      </div>
+      <p id="discount-message" class="discount-message" hidden></p>
+
+      <div id="checkout-summary" class="checkout-summary" hidden>
+        <div class="cart-total-row">
+          <span>Discount</span>
+          <strong id="cart-discount" class="discount-value">-$0.00</strong>
+        </div>
+        <div class="cart-total-row checkout-final">
+          <span>Total</span>
+          <strong id="cart-total">$0.00</strong>
+        </div>
+      </div>
+
+      <button type="button" id="checkout-btn" class="btn btn-primary btn-block" disabled>
+        Checkout
+      </button>
+    </div>
+  </aside>
+</div>
+
+<section id="purchase-history" class="panel purchase-history" hidden>
+  <div class="panel-header">
+    <h2>Your Purchase History</h2>
+    <span id="history-order-count" class="badge">0 orders</span>
+  </div>
+  <div id="history-list" class="history-list"></div>
+</section>
+
+<section id="order-result" class="panel order-result" hidden>
+  <div class="panel-header">
+    <h2>Order Confirmed</h2>
+  </div>
+  <div id="order-details"></div>
+  <div id="new-discount-banner" class="discount-banner" hidden></div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  window.STORE_CONFIG = {
+    discountEveryN: {{ discount_every_n }},
+    discountPercent: {{ discount_percent }},
+  };
+</script>
+<script src="{% static 'store/js/common.js' %}"></script>
+<script src="{% static 'store/js/shop.js' %}"></script>
+{% endblock %}

@@ -1,7 +1,8 @@
 from decimal import Decimal
 
 from store.domain import Product
-from store.repositories.memory_store import get_store
+from store.repositories.mappers import product_from_doc, product_to_doc
+from store.repositories.mongo import products_collection
 
 DEFAULT_PRODUCTS = [
     Product(id="prod-1", name="Wireless Mouse", price=Decimal("29.99")),
@@ -13,21 +14,16 @@ DEFAULT_PRODUCTS = [
 
 
 def seed_products():
-    store = get_store()
-    with store.data_lock:
-        if store.products:
-            return
-        for product in DEFAULT_PRODUCTS:
-            store.products[product.id] = product
+    col = products_collection()
+    if col.count_documents({}) > 0:
+        return
+    col.insert_many([product_to_doc(p) for p in DEFAULT_PRODUCTS])
 
 
 class ProductRepository:
     def list_all(self) -> list[Product]:
-        store = get_store()
-        with store.data_lock:
-            return list(store.products.values())
+        return [product_from_doc(doc) for doc in products_collection().find()]
 
     def get(self, product_id: str) -> Product | None:
-        store = get_store()
-        with store.data_lock:
-            return store.products.get(product_id)
+        doc = products_collection().find_one({"_id": product_id})
+        return product_from_doc(doc) if doc else None

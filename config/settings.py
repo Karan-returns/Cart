@@ -10,6 +10,8 @@ env = environ.Env(
     DISCOUNT_PERCENT=(int, 10),
     DISCOUNT_CODE_PREFIX=(str, "SAVE"),
     ADMIN_API_KEY=(str, "dev-admin-key"),
+    MONGODB_URI=(str, ""),
+    MONGODB_DB_NAME=(str, "cart_store"),
 )
 
 environ.Env.read_env(BASE_DIR / ".env")
@@ -20,6 +22,7 @@ ALLOWED_HOSTS = ["*"]
 
 INSTALLED_APPS = [
     "django.contrib.contenttypes",
+    "django.contrib.staticfiles",
     "rest_framework",
     "store",
 ]
@@ -32,7 +35,24 @@ MIDDLEWARE = [
 ROOT_URLCONF = "config.urls"
 WSGI_APPLICATION = "config.wsgi.application"
 
-# Minimal DB config for Django test runner; app uses in-memory repositories.
+TEMPLATES = [
+    {
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.request",
+                "django.template.context_processors.static",
+            ],
+        },
+    },
+]
+
+STATIC_URL = "static/"
+STATICFILES_DIRS = [BASE_DIR / "store" / "static"]
+
+# SQLite only required by Django's test runner; app data lives in MongoDB.
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
@@ -62,3 +82,6 @@ DISCOUNT_EVERY_N_ORDERS = env("DISCOUNT_EVERY_N_ORDERS")
 DISCOUNT_PERCENT = env("DISCOUNT_PERCENT")
 DISCOUNT_CODE_PREFIX = env("DISCOUNT_CODE_PREFIX")
 ADMIN_API_KEY = env("ADMIN_API_KEY")
+
+MONGODB_URI = env("MONGODB_URI")
+MONGODB_DB_NAME = env("MONGODB_DB_NAME")

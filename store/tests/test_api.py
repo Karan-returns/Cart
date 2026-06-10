@@ -40,6 +40,67 @@ class APIIntegrationTests(StoreTestCase, APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn("revenue", response.json())
 
+    def test_checkout_preview(self):
+        self.client.post(
+            "/api/carts/alice/items/",
+            {"product_id": "prod-1", "quantity": 2},
+            format="json",
+        )
+        response = self.client.post(
+            "/api/checkout/preview/",
+            {"customer_id": "alice"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()["subtotal"], "59.98")
+        self.assertEqual(response.json()["total"], "59.98")
+        self.assertFalse(response.json()["discount_applied"])
+
+    def test_customer_profile(self):
+        self.client.post(
+            "/api/carts/alice/items/",
+            {"product_id": "prod-1", "quantity": 1},
+            format="json",
+        )
+        self.client.post(
+            "/api/checkout/",
+            {"customer_id": "alice"},
+            format="json",
+        )
+
+        response = self.client.get("/api/customers/alice/profile/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()["order_count"], 1)
+
+    def test_admin_customers_list(self):
+        self.client.post(
+            "/api/carts/alice/items/",
+            {"product_id": "prod-1", "quantity": 1},
+            format="json",
+        )
+        self.client.post(
+            "/api/checkout/",
+            {"customer_id": "alice"},
+            format="json",
+        )
+
+        response = self.client.get(
+            "/api/admin/customers/",
+            HTTP_X_ADMIN_KEY="test-admin-key",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()["total_customers"], 1)
+
+    def test_admin_settings_update(self):
+        response = self.client.patch(
+            "/api/admin/settings/",
+            {"discount_every_n_orders": 5, "discount_percent": 15},
+            format="json",
+            HTTP_X_ADMIN_KEY="test-admin-key",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()["discount_every_n_orders"], 5)
+
     def test_admin_generate_discount_at_milestone(self):
         for i in range(3):
             self.client.post(
@@ -52,6 +113,25 @@ class APIIntegrationTests(StoreTestCase, APITestCase):
                 {"customer_id": f"user{i}"},
                 format="json",
             )
+
+        response = self.client.post(
+            "/api/admin/discount-codes/generate/",
+            HTTP_X_ADMIN_KEY="test-admin-key",
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertIn("code", response.json())
+
+    def test_admin_generate_discount_anytime(self):
+        self.client.post(
+            "/api/carts/user1/items/",
+            {"product_id": "prod-1", "quantity": 1},
+            format="json",
+        )
+        self.client.post(
+            "/api/checkout/",
+            {"customer_id": "user1"},
+            format="json",
+        )
 
         response = self.client.post(
             "/api/admin/discount-codes/generate/",

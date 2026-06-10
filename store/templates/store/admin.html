@@ -1,0 +1,103 @@
+{% extends "store/base.html" %}
+{% load static %}
+
+{% block title %}Admin — Cart Store{% endblock %}
+
+{% block content %}
+<section class="page-header">
+  <div>
+    <h1>Admin Dashboard</h1>
+    <p class="subtitle">Manage store settings, view customer purchases, and issue discount codes.</p>
+  </div>
+</section>
+
+<div class="admin-auth panel">
+  <label for="admin-key" class="field-label">Admin API Key</label>
+  <div class="input-row">
+    <input type="password" id="admin-key" placeholder="Enter X-Admin-Key" class="input mono">
+    <button type="button" id="save-admin-key" class="btn btn-secondary">Save</button>
+  </div>
+  <p class="hint">Stored in your browser session only. Default dev key: <code>dev-admin-key</code></p>
+</div>
+
+<div class="stats-grid" id="stats-grid">
+  <div class="stat-card">
+    <span class="stat-label">Items Purchased</span>
+    <span class="stat-value" id="stat-items">—</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-label">Revenue</span>
+    <span class="stat-value" id="stat-revenue">—</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-label">Codes Issued</span>
+    <span class="stat-value" id="stat-issued">—</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-label">Codes Used</span>
+    <span class="stat-value" id="stat-used">—</span>
+  </div>
+  <div class="stat-card stat-card-wide">
+    <span class="stat-label">Total Discounts Given</span>
+    <span class="stat-value" id="stat-discounts">—</span>
+  </div>
+</div>
+
+<div class="admin-grid">
+  <section class="panel admin-settings">
+    <div class="panel-header">
+      <h2>Store Settings</h2>
+      <button type="button" id="refresh-settings" class="btn btn-ghost btn-sm">Reload</button>
+    </div>
+    <form id="settings-form" class="settings-form">
+      <div class="form-field">
+        <label for="setting-n" class="field-label">Every N orders</label>
+        <input type="number" id="setting-n" class="input" min="1" max="100">
+      </div>
+      <div class="form-field">
+        <label for="setting-percent" class="field-label">Discount percent</label>
+        <input type="number" id="setting-percent" class="input" min="1" max="100">
+      </div>
+      <div class="form-field">
+        <label for="setting-prefix" class="field-label">Code prefix</label>
+        <input type="text" id="setting-prefix" class="input mono" maxlength="20">
+      </div>
+      <button type="submit" class="btn btn-primary">Save Settings</button>
+    </form>
+  </section>
+
+  <section class="panel admin-actions">
+    <div class="panel-header">
+      <h2>Discount Codes</h2>
+      <button type="button" id="refresh-stats" class="btn btn-ghost btn-sm">Refresh Stats</button>
+    </div>
+    <p class="muted">Issue a discount code anytime. Milestone orders still auto-generate at checkout.</p>
+    <button type="button" id="generate-discount" class="btn btn-primary">Generate Discount Code</button>
+    <div id="generate-result" class="generate-result" hidden></div>
+  </section>
+</div>
+
+<section class="panel customers-panel">
+  <div class="panel-header">
+    <h2>Customers</h2>
+    <button type="button" id="refresh-customers" class="btn btn-ghost btn-sm">Refresh</button>
+  </div>
+  <div id="customers-table-wrap">
+    <p class="muted">Save your admin key to load customers.</p>
+  </div>
+</section>
+
+<section id="customer-detail-panel" class="panel customer-detail-panel" hidden>
+  <div class="panel-header">
+    <h2 id="detail-customer-name">Customer</h2>
+    <button type="button" id="close-detail" class="btn btn-ghost btn-sm">Close</button>
+  </div>
+  <div id="customer-detail-summary" class="detail-summary"></div>
+  <div id="customer-orders-list" class="history-list"></div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'store/js/common.js' %}"></script>
+<script src="{% static 'store/js/admin.js' %}"></script>
+{% endblock %}

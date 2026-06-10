@@ -1,7 +1,8 @@
+import uuid
 from decimal import Decimal
 
 from store.domain import Order, OrderLineItem, utc_now
-from store.exceptions import DiscountGenerationError, InvalidDiscountCodeError
+from store.exceptions import InvalidDiscountCodeError
 from store.repositories.discount_repo import DiscountRepository
 from store.repositories.order_repo import OrderRepository
 from store.services.discount_service import DiscountService
@@ -20,7 +21,7 @@ class DiscountServiceTests(StoreTestCase):
 
     def _create_order(self, customer_id: str = "alice"):
         order = Order(
-            id="order-1",
+            id=str(uuid.uuid4()),
             customer_id=customer_id,
             items=[
                 OrderLineItem(
@@ -68,12 +69,37 @@ class DiscountServiceTests(StoreTestCase):
         with self.assertRaises(InvalidDiscountCodeError):
             self.service.validate_code(code.code)
 
-    def test_admin_force_raises_when_not_eligible(self):
-        with self.assertRaises(DiscountGenerationError):
-            self.service.generate_code(force=True)
+    def test_admin_force_generates_between_milestones(self):
+        self._create_order()
+        self._create_order()
+        code = self.service.generate_code(force=True)
+        self.assertIsNotNone(code)
+        self.assertEqual(code.percent, 10)
+        self.assertTrue(code.code.startswith("SAVE-2-"))
+        self.assertEqual(code.issued_for_order_number, 2)
 
     def test_admin_force_succeeds_at_milestone(self):
         for _ in range(3):
             self._create_order()
         code = self.service.generate_code(force=True)
         self.assertIsNotNone(code)
+
+    def test_milestone_code_assigned_to_checkout_customer(self):
+        for customer in ("u1", "u2"):
+            self._create_order(customer_id=customer)
+        self._create_order(customer_id="u3")
+        code = self.service.generate_code(customer_id="u3")
+        self.assertIsNotNone(code)
+        self.assertEqual(code.issued_to_customer_id, "u3")
+
+    def test_list_available_for_customer_infers_owner_from_orders(self):
+        for customer in ("u1", "u2", "u3"):
+            self._create_order(customer_id=customer)
+        code = self.service.generate_code()
+        self.assertIsNotNone(code)
+
+        available = self.service.list_available_for_customer("u3")
+        self.assertEqual(len(available), 1)
+        self.assertEqual(available[0].code, code.code)
+
+        self.assertEqual(self.service.list_available_for_customer("u1"), [])

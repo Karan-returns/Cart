@@ -6,6 +6,8 @@ class StoreConfig(AppConfig):
     name = "store"
 
     def ready(self):
+        from store.repositories.mongo import ensure_indexes
         from store.repositories.product_repo import seed_products
 
+        ensure_indexes()
         seed_products()

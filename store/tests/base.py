@@ -1,6 +1,6 @@
 from django.test import TestCase, override_settings
 
-from store.repositories.memory_store import get_store
+from store.repositories.mongo import reset_client, reset_database
 from store.repositories.product_repo import seed_products
 
 
@@ -9,9 +9,15 @@ from store.repositories.product_repo import seed_products
     DISCOUNT_PERCENT=10,
     DISCOUNT_CODE_PREFIX="SAVE",
     ADMIN_API_KEY="test-admin-key",
+    MONGODB_DB_NAME="cart_store_test",
+    # Uses the same Atlas cluster as dev; tests wipe cart_store_test only.
+    MONGODB_URI=__import__("os").environ.get(
+        "MONGODB_URI", "mongodb://localhost:27017"
+    ),
 )
 class StoreTestCase(TestCase):
     def setUp(self):
         super().setUp()
-        get_store().reset()
+        reset_client()
+        reset_database()
         seed_products()

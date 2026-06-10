@@ -53,5 +53,6 @@ class DiscountCode:
     code: str
     percent: int
     issued_for_order_number: int
+    issued_to_customer_id: Optional[str] = None
     used: bool = False
     created_at: datetime = field(default_factory=utc_now)

@@ -38,6 +38,23 @@ class CheckoutServiceTests(StoreTestCase):
         with self.assertRaises(CartEmptyError):
             self.service.checkout("alice")
 
+    def test_preview_checkout_with_discount(self):
+        for customer in ("p1", "p2", "p3"):
+            self.cart_service.add_item(customer, "prod-1", 1)
+            self.service.checkout(customer)
+
+        code = self.discount_service.generate_code()
+        self.cart_service.add_item("alice", "prod-1", 1)
+        preview = self.service.preview_checkout("alice", discount_code=code.code)
+        self.assertTrue(preview["discount_applied"])
+        self.assertEqual(preview["discount_amount"], "3.00")
+        self.assertEqual(preview["total"], "26.99")
+
+    def test_preview_checkout_invalid_discount_raises(self):
+        self.cart_service.add_item("alice", "prod-1", 1)
+        with self.assertRaises(InvalidDiscountCodeError):
+            self.service.preview_checkout("alice", discount_code="BAD")
+
     def test_successful_checkout(self):
         self.cart_service.add_item("alice", "prod-1", 2)
         result = self.service.checkout("alice")
