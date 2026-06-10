@@ -1,0 +1,136 @@
+{
+  "info": {
+    "name": "Ecommerce Cart API",
+    "description": "Cart, checkout, and admin APIs for the ecommerce store assignment.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8000/api"
+    },
+    {
+      "key": "adminKey",
+      "value": "dev-admin-key"
+    },
+    {
+      "key": "customerId",
+      "value": "alice"
+    }
+  ],
+  "item": [
+    {
+      "name": "Products",
+      "item": [
+        {
+          "name": "List Products",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/products/"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cart",
+      "item": [
+        {
+          "name": "Add Item to Cart",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"product_id\": \"prod-1\",\n  \"quantity\": 2\n}"
+            },
+            "url": "{{baseUrl}}/carts/{{customerId}}/items/"
+          }
+        },
+        {
+          "name": "Get Cart",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/carts/{{customerId}}/"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Checkout",
+      "item": [
+        {
+          "name": "Checkout (no discount)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customer_id\": \"{{customerId}}\"\n}"
+            },
+            "url": "{{baseUrl}}/checkout/"
+          }
+        },
+        {
+          "name": "Checkout (with discount code)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customer_id\": \"{{customerId}}\",\n  \"discount_code\": \"SAVE-3-REPLACE_ME\"\n}"
+            },
+            "url": "{{baseUrl}}/checkout/"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "Generate Discount Code",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Admin-Key",
+                "value": "{{adminKey}}"
+              }
+            ],
+            "url": "{{baseUrl}}/admin/discount-codes/generate/"
+          }
+        },
+        {
+          "name": "Get Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Admin-Key",
+                "value": "{{adminKey}}"
+              }
+            ],
+            "url": "{{baseUrl}}/admin/stats/"
+          }
+        }
+      ]
+    }
+  ]
+}
